@@ -1,13 +1,17 @@
 import { Router } from 'express';
 import Model from '../../utils/model/index.js';
 
+import query from '../../utils/db/index.js';
+
 const route = Router();
 
 const blogPosts = new Model('blogposts', 'blogpost_id');
 
 route.get('/', async (req, res, next) => {
   try {
-    const dbResponse = await blogPosts.find(req.query);
+    const dbResponse = await query(
+      'SELECT b.blogpost_id, b.category, b.title, b.content, b.cover, a.author_id, a.name, a.surname FROM blogposts AS b INNER JOIN authors as a ON b.author=a.author_id'
+    );
     res.send(dbResponse);
   } catch (error) {
     res.status(500).send({ error: error.message });

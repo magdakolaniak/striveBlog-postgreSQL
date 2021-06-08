@@ -5,22 +5,32 @@ class Model {
     this.name = name;
     this.id_name = id_name;
   }
+
   async findById(id) {
     if (!id) {
       throw new Error('ID must be provided');
     } else {
-      const blogPost = await query(
-        `SELECT * FROM ${this.name} WHERE ${this.id_name}=${id}`
-      );
-      if (blogPost) {
-        return blogPost;
+      const blogPosts = await query(`SELECT 
+  blogposts.blogpost_id, 
+blogposts.category, 
+blogposts.title, 
+blogposts.content,
+blogposts.cover, 
+authors.author_id, 
+authors.name, 
+authors.surname FROM ${this.name} INNER JOIN authors ON blogposts.author = author_id
+WHERE ${this.id_name} = ${id}
+  `);
+      if (blogPosts) {
+        return blogPosts;
       } else {
-        const error = new Error(`ID you're looking for is not found`);
+        const error = new Error(`ID you're looking found is not there!`);
         error.code = 404;
         throw error;
       }
     }
   }
+
   async find(filter, projection) {
     let queryText = `SELECT ${projection ? projection : '*'} FROM ${this.name}`;
     if (Object.values(filter).length > 0) {
@@ -34,6 +44,7 @@ class Model {
     const blogPosts = await query(queryText);
     return blogPosts;
   }
+
   async create(modelValues) {
     if (Object.values(modelValues).length > 0) {
       let queryText = `INSERT INTO ${this.name} (${Object.keys(
